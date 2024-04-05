@@ -11,7 +11,7 @@ import { GetTaskFilterDto } from './dto/get-task-filter.dto';
 export class TasksService {
     constructor(
         @InjectRepository(Task)
-        private taskRepository: MongoRepository<Task>,
+        private taskRepository: TaskRepository,
     ) { };
 
     async getTasks(filterDto: GetTaskFilterDto): Promise<Task[]> {
