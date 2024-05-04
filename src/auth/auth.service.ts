@@ -5,7 +5,7 @@ import * as bcrypt from 'bcrypt';
 import { User } from './user.entity';
 import { UserRepository } from './user.repository';
 import { AuthCredentialsDto } from './dto/auth-credentials.dto';
-import { Repository } from 'typeorm';
+import { RemoveOptions, Repository, SaveOptions } from 'typeorm';
 import { JwtPayload } from './jwt-payload.interface';
 
 @Injectable()
@@ -40,7 +40,15 @@ export class AuthService {
         }
     }
 
-    async signIn(authCredentialsDto: AuthCredentialsDto): Promise<{ accessToken: string }> {
+    async signIn(authCredentialsDto: AuthCredentialsDto): Promise<{ 
+        user: {
+            id: number,
+            username: string
+        },
+        accessToken: string,
+        tokenType: string,
+        expiresIn: string
+    }> {
         const { username, password } = authCredentialsDto;
         const user = await this.userRepository.findOne({ where: { username } });
         if (user && await user.validatePassword(password)) {
@@ -49,7 +57,15 @@ export class AuthService {
             const payload: JwtPayload = { username };
             const accessToken = await this.jwtService.sign(payload);
 
-            return { accessToken };
+            return {
+                user: {
+                    id: user.id,
+                    username: user.username,
+                },
+                accessToken: accessToken,
+                tokenType: 'Bearer',
+                expiresIn: new Date(Date.now() + 365 * 24*60*60*1000).getTime().toString(),
+            };
 
         } else {
             // return null;
